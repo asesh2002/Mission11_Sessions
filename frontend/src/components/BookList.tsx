@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Book } from '../types/Book';
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 function BookList({ selectedCategories }: { selectedCategories: string[] }) {
   const [books, setBooks] = useState<Book[]>([]);
@@ -9,50 +11,105 @@ function BookList({ selectedCategories }: { selectedCategories: string[] }) {
   const [totalPages, setTotalPages] = useState<number>(0);
   const [sortBy, setSortBy] = useState('Title');
   const [descending, setDescending] = useState(false);
+  const [showToast, setShowToast] = useState(false); // state for controlling toast visibility
 
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+
+  // Fetch books when filters, page, or sort change
   useEffect(() => {
     const fetchBooks = async () => {
       const categoryParams = selectedCategories
         .map((cat) => `bookCategories=${encodeURIComponent(cat)}`)
         .join('&');
 
-      const response = await fetch(
-        `https://localhost:5000/api/Book/AllBooks?pageSize=${pageSize}&pageNum=${pageNum}${selectedCategories.length ? `&${categoryParams}` : ''}`,
-      );
+      const finalUrl = `https://localhost:5000/api/Book/AllBooks?pageSize=${pageSize}&pageNum=${pageNum}&sortBy=${sortBy}&descending=${descending}${selectedCategories.length ? `&${categoryParams}` : ''}`;
+
+      console.log('Fetching books with URL:', finalUrl);
+
+      const response = await fetch(finalUrl);
       const data = await response.json();
+
       setBooks(data.books);
       setTotalItems(data.totalNumBooks);
-      setTotalPages(Math.ceil(totalItems / pageSize));
+      setTotalPages(Math.ceil(data.totalNumBooks / pageSize));
     };
 
     fetchBooks();
-  }, [pageSize, pageNum, totalItems, selectedCategories]);
+  }, [pageSize, pageNum, selectedCategories, sortBy, descending]);
+
+  // Automatically hide toast after 3 seconds
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
   return (
     <>
       <h1>Book Store inventory</h1>
       <br />
-      {books.map((b) => (
-        <div id="bookCard" className="card" key={b.bookId}>
-          <h3 className="card-title">{b.title}</h3>
-          <div className="card-body">
-            <ul className="list-unstyled">
-              <li>Author: {b.author}</li>
-              <li>Publisher: {b.publisher}</li>
-              <li>ISBN: {b.isbn}</li>
-              <li>Classification: {b.classification}</li>
-              <li>Category: {b.category}</li>
-              <li>Page count: {b.pageCount}</li>
-              <li>Price: ${b.price}</li>
-            </ul>
+      {/* Toast for "Book added to cart" */}
+      {showToast && (
+        <div className="toast-container position-fixed bottom-0 end-0 p-3">
+          <div className="toast show bg-success text-white">
+            <div className="toast-header">
+              <strong className="me-auto">Success</strong>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowToast(false)}
+              />
+            </div>
+            <div className="toast-body">Book added to cart!</div>
           </div>
         </div>
-      ))}
-      {/* previous button */}
-      <button disabled={pageNum == 1} onClick={() => setPageNum(pageNum - 1)}>
+      )}
+      {/* Bootstrap grid layout for book cards */}
+      <div className="container">
+        <div className="row">
+          {books.map((b) => (
+            <div key={b.bookId} className="col-md-6 col-lg-4 mb-4">
+              <div id="bookCard" className="card h-100">
+                <h3 className="card-title p-3">{b.title}</h3>
+                <div className="card-body">
+                  <ul className="list-unstyled">
+                    <li>Author: {b.author}</li>
+                    <li>Publisher: {b.publisher}</li>
+                    <li>ISBN: {b.isbn}</li>
+                    <li>Classification: {b.classification}</li>
+                    <li>Category: {b.category}</li>
+                    <li>Page count: {b.pageCount}</li>
+                    <li>Price: ${b.price}</li>
+                  </ul>
+                  {/* Purchase button also shows toast and navigates */}
+                  <button
+                    className="btn btn-success"
+                    onClick={() => {
+                      setShowToast(true); // show toast
+                      setTimeout(() => {
+                        navigate(`/purchase/${b.title}/${b.bookId}`, {
+                          state: {
+                            title: b.title,
+                            price: b.price,
+                          },
+                        });
+                      }, 500); // wait 500ms so the user sees the toast
+                    }}
+                  >
+                    Purchase
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Pagination Controls */}
+      <button disabled={pageNum === 1} onClick={() => setPageNum(pageNum - 1)}>
         Previous
       </button>
-      {/* number button */}
       {[...Array(totalPages)].map((_, index) => (
         <button
           key={index + 1}
@@ -62,14 +119,13 @@ function BookList({ selectedCategories }: { selectedCategories: string[] }) {
           {index + 1}
         </button>
       ))}
-      {/* next button */}
       <button
         disabled={pageNum === totalPages}
         onClick={() => setPageNum(pageNum + 1)}
       >
         Next
       </button>
-      {/* results */}
+      {/* Page Size Selector */}
       <br />
       <label>
         Results per page
@@ -77,7 +133,7 @@ function BookList({ selectedCategories }: { selectedCategories: string[] }) {
           value={pageSize}
           onChange={(p) => {
             setPageSize(Number(p.target.value));
-            setPageNum(1);
+            setPageNum(1); // reset to first page when page size changes
           }}
         >
           <option value="5">5</option>
@@ -93,4 +149,5 @@ function BookList({ selectedCategories }: { selectedCategories: string[] }) {
     </>
   );
 }
+
 export default BookList;

@@ -1,20 +1,26 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import WelcomeBand from '../components/WelcomeBand';
 import { CartItem } from '../types/CartItem';
 import { useCart } from '../context/CartContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function DonatePage() {
   const navigate = useNavigate();
-  const { title, bookId } = useParams();
+  const { bookId } = useParams();
+  const location = useLocation();
   const { addToCart } = useCart();
-  const [purchaseAmount, setPurchaseAmount] = useState<number>(0);
+
+  // Pull passed data from state
+  const passedTitle = location.state?.title ?? 'Unknown Book';
+  const passedPrice = location.state?.price ?? 0;
+
+  const [price, setPrice] = useState<number>(passedPrice);
 
   const handleAddToCart = () => {
     const newItem: CartItem = {
       bookId: Number(bookId),
-      title: title || 'no book',
-      purchaseAmount,
+      title: passedTitle,
+      price: price,
     };
     addToCart(newItem);
     navigate('/cart');
@@ -23,18 +29,14 @@ function DonatePage() {
   return (
     <>
       <WelcomeBand />
-      <h2>Purchase {title}</h2>
+      <h2>Purchase {passedTitle}</h2>
 
       <div>
-        <input
-          type="number"
-          //   placeholder="Enter donation amount"
-          value={purchaseAmount}
-          onChange={(x) => setPurchaseAmount(Number(x.target.value))}
-        />
+        <h3>Price: ${price.toFixed(2)}</h3>
+        <br/>
         <button onClick={handleAddToCart}>Add to Cart</button>
       </div>
-      {/* takes you back to whatever the last page was */}
+
       <button onClick={() => navigate(-1)}>Go back</button>
     </>
   );

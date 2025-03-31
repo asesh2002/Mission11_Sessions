@@ -12,11 +12,11 @@ function CartPage() {
         {cart.length === 0 ? (
           <p>Your cart is empty</p>
         ) : (
-          <ul>
+            <ul>
             {cart.map((item: CartItem) => (
               <li key={item.bookId}>
-                {item.bookId}: ${item.purchaseAmount.toFixed(2)}
-                <button onClick={() => removeFromCart(item.bookId)}>
+                <strong>{item.title}</strong> — ${item.price.toFixed(2)}
+                <button onClick={() => removeFromCart(Number(item.bookId))}>
                   Remove
                 </button>
               </li>
@@ -26,7 +26,7 @@ function CartPage() {
       </div>
       <h3>Total</h3>
       <button>Checkout</button>
-      <button onClick={() => navigate('/projects')}>Continue browsing</button>
+      <button onClick={() => navigate('/books')}>Continue browsing</button>
     </div>
   );
 }

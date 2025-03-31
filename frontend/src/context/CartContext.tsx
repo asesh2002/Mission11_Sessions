@@ -20,7 +20,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       //make a new cart if it does
       const updatedCart = prevCart.map((c) =>
         c.bookId === item.bookId
-          ? { ...c, donationAmount: c.purchaseAmount + item.purchaseAmount }
+          ? { ...c, totalPrice: c.price + item.price }
           : c
       );
 
@@ -37,7 +37,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCart(() => []);
   };
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider
+      value={{ cart, addToCart, removeFromCart, clearCart }}
+    >
       {children}
     </CartContext.Provider>
   );
@@ -45,7 +47,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error("useCart must be used within a CartProvider")
+    throw new Error('useCart must be used within a CartProvider');
   }
   return context;
-}
+};

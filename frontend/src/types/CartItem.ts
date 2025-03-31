@@ -1,5 +1,5 @@
-export interface CartItem{
-    bookId: number;
-    title: string;
-    purchaseAmount: number;
+export interface CartItem {
+  bookId: number;
+  title: string;
+  price: number;
 }

@@ -40,7 +40,24 @@ function CategoryFilter({
   return (
     <div className="category-filter">
       <h5>Book Categories</h5>
-      <div className="categpry-list">
+
+      {/* Collapse toggle for category help */}
+      <button
+        className="btn btn-outline-info mb-3"
+        data-bs-toggle="collapse"
+        data-bs-target="#categoryHelp"
+      >
+        What do these filters mean?
+      </button>
+
+      <div className="collapse" id="categoryHelp">
+        <div className="card card-body">
+          Select one or more categories to filter the books below. Unchecking
+          removes that filter.
+        </div>
+      </div>
+
+      <div className="category-list mt-3">
         {categories.map((c) => (
           <div key={c} className="category-item">
             <input
@@ -49,6 +66,7 @@ function CategoryFilter({
               value={c}
               className="category-checkbox"
               onChange={handleCheckboxChange}
+              checked={selectedCategories.includes(c)}
             />
             <label htmlFor={c}>{c}</label>
           </div>
