@@ -15,7 +15,7 @@ function CategoryFilter({
       // try catch block
       try {
         const response = await fetch(
-          'https://localhost:5000/api/book/GetBookTypes'
+          'ttps://mission13-sessions-backend-cecnavasbka6dvau.eastus-01.azurewebsites.net/api/book/GetBookTypes'
         );
         const data = await response.json();
         console.log('Fetched categories:', data);
