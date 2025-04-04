@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Book } from '../types/Book';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { fetchBooks } from '../api/BooksAPI';
+import Pagination from './Pagination';
 
 function BookList({ selectedCategories }: { selectedCategories: string[] }) {
   const [books, setBooks] = useState<Book[]>([]);
@@ -12,30 +14,36 @@ function BookList({ selectedCategories }: { selectedCategories: string[] }) {
   const [sortBy, setSortBy] = useState('Title');
   const [descending, setDescending] = useState(false);
   const [showToast, setShowToast] = useState(false); // state for controlling toast visibility
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
   // Fetch books when filters, page, or sort change
   useEffect(() => {
-    const fetchBooks = async () => {
-      const categoryParams = selectedCategories
-        .map((cat) => `bookCategories=${encodeURIComponent(cat)}`)
-        .join('&');
+    const loadBooks = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchBooks(
+          pageSize,
+          pageNum,
+          selectedCategories,
+          sortBy,
+          descending
+        );
 
-      const finalUrl = `https://localhost:5000/api/Book/AllBooks?pageSize=${pageSize}&pageNum=${pageNum}&sortBy=${sortBy}&descending=${descending}${selectedCategories.length ? `&${categoryParams}` : ''}`;
-
-      console.log('Fetching books with URL:', finalUrl);
-
-      const response = await fetch(finalUrl);
-      const data = await response.json();
-
-      setBooks(data.books);
-      setTotalItems(data.totalNumBooks);
-      setTotalPages(Math.ceil(data.totalNumBooks / pageSize));
+        setBooks(data.books);
+        setTotalItems(data.totalNumBooks);
+        setTotalPages(Math.ceil(data.totalNumBooks / pageSize));
+      } catch (error) {
+        setError((error as Error).message);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchBooks();
+    loadBooks();
   }, [pageSize, pageNum, selectedCategories, sortBy, descending]);
 
   // Automatically hide toast after 3 seconds
@@ -45,6 +53,9 @@ function BookList({ selectedCategories }: { selectedCategories: string[] }) {
       return () => clearTimeout(timer);
     }
   }, [showToast]);
+
+  if (loading) return <p>Loading projects...</p>;
+  if (error) return <p className="text-red-500"> Error: {error}</p>;
 
   return (
     <>
@@ -105,47 +116,17 @@ function BookList({ selectedCategories }: { selectedCategories: string[] }) {
             </div>
           ))}
         </div>
-      </div>
-      {/* Pagination Controls */}
-      <button disabled={pageNum === 1} onClick={() => setPageNum(pageNum - 1)}>
-        Previous
-      </button>
-      {[...Array(totalPages)].map((_, index) => (
-        <button
-          key={index + 1}
-          onClick={() => setPageNum(index + 1)}
-          disabled={pageNum === index + 1}
-        >
-          {index + 1}
-        </button>
-      ))}
-      <button
-        disabled={pageNum === totalPages}
-        onClick={() => setPageNum(pageNum + 1)}
-      >
-        Next
-      </button>
-      {/* Page Size Selector */}
-      <br />
-      <label>
-        Results per page
-        <select
-          value={pageSize}
-          onChange={(p) => {
-            setPageSize(Number(p.target.value));
-            setPageNum(1); // reset to first page when page size changes
+        <Pagination
+          currentPage={pageNum}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          onPageChange={setPageNum}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setPageNum(1);
           }}
-        >
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="20">20</option>
-        </select>
-      </label>
-      <br /> <br />
-      {/* Sorting Toggle */}
-      <button onClick={() => setDescending(!descending)}>
-        {descending ? 'Sort A-Z' : 'Sort Z-A'}
-      </button>
+        />
+      </div>
     </>
   );
 }

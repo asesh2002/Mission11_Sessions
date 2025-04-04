@@ -1,0 +1,4 @@
+{
+  "appService.defaultWebAppToDeploy": "undefined/subscriptions/46c85f46-92c2-4974-bdd0-cd7786432021/resourceGroups/appsvc_windows_eastus/providers/Microsoft.Web/sites/Mission13-Sessions-Backend",
+  "appService.deploySubpath": "backend/Mission11.API/publish"
+}
