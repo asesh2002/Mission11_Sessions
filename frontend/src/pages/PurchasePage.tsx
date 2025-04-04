@@ -2,7 +2,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import WelcomeBand from '../components/WelcomeBand';
 import { CartItem } from '../types/CartItem';
 import { useCart } from '../context/CartContext';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 function DonatePage() {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ function DonatePage() {
   const passedTitle = location.state?.title ?? 'Unknown Book';
   const passedPrice = location.state?.price ?? 0;
 
-  const [price, setPrice] = useState<number>(passedPrice);
+  const [price] = useState<number>(passedPrice);
 
   const handleAddToCart = () => {
     const newItem: CartItem = {

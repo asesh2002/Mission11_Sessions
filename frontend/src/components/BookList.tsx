@@ -9,16 +9,16 @@ function BookList({ selectedCategories }: { selectedCategories: string[] }) {
   const [books, setBooks] = useState<Book[]>([]);
   const [pageSize, setPageSize] = useState<number>(10);
   const [pageNum, setPageNum] = useState<number>(1);
-  const [totalItems, setTotalItems] = useState<number>(0);
+  const [, setTotalItems] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
-  const [sortBy, setSortBy] = useState('Title');
-  const [descending, setDescending] = useState(false);
+  const [sortBy] = useState('Title');
+  const [descending] = useState(false);
   const [showToast, setShowToast] = useState(false); // state for controlling toast visibility
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  useCart();
 
   // Fetch books when filters, page, or sort change
   useEffect(() => {

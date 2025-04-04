@@ -1,5 +1,5 @@
 import './App.css';
-import BookList from './components/BookList';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 // Import Bootstrap's JS bundle (needed for toasts, modals, etc.)
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';

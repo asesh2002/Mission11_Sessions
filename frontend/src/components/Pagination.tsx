@@ -13,7 +13,7 @@ const Pagination = ({
   onPageChange,
   onPageSizeChange,
 }: PaginationProps) => {
-  function setDescending(arg0: boolean): void {
+  function setDescending(_arg0: boolean): void {
     throw new Error('Function not implemented.');
   }
 
